@@ -12,9 +12,15 @@ from .utils.latex_handler import (
     write_latex_file,
     compile_latex_to_pdf
 )
+from .mail.status_classifier import classify_email
+from .mail.gmail_reader import fetch_latest_emails
 
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"])
+
+@app.get("/")
+def read_root():
+    return {"message": "Hello, I'm your AI agent that will help you manage applications for your job."}
 
 # ---------------------------
 # 📌 Endpoint 1: Parse Job Offer
@@ -67,5 +73,38 @@ def generate_cv(job_data: dict = Body(...)):
         "status": "success",
         "pdf_path": pdf_path
     }
+    
+@app.get("/email/status")
+def get_email_status():
+    emails = fetch_latest_emails()
+    results = []
+
+    for email in emails:
+        status = classify_email(email["subject"], email["body"])
+        results.append({
+            "subject": email["subject"],
+            "from": email["from"],
+            "date": email["date"],
+            "status": status
+        })
+
+    return results
+
 # uvicorn backend.main:app --reload
 # ### myenv\Scripts\activate
+# # {
+#   "description": "We are looking for a backend Python developer..."
+# }
+# {
+#   "job_offer": {
+#     "title": "Backend Python Developer",
+#     "entreprise": "Tech Corp",
+#     "localisation": "Paris",
+#     "missions": "Develop APIs, maintain microservices",
+#     "compétences": ["Python", "Docker", "FastAPI"],
+#     "expérience_requise": "3+ years",
+#     "type_contrat": "CDI",
+#     "langues": ["French", "English"],
+#     "salaire": "€50,000"
+#   }
+# }
