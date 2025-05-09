@@ -8,4 +8,5 @@ dist/
 build/
 
 # Ignore the data folder
+cvs/
 data/
